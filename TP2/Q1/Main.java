@@ -4,6 +4,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Scanner;
 
 class Show{
     private String show_id;
@@ -265,13 +266,7 @@ class Show{
 
     }
 
-    @Override
-    public String toString(){
-
-        return "=> " + show_id + " ## " + type + " ## " + title + " ## " + director + " ## " + "[" + cast + "]" + " ## "
-                + country + " ## " + date_added + " ## " + release_year + " ## " + rating + " ## " + duration +
-                " ## " + "[" + listed_in + " ]"+"##";
-    }
+    
 
 }
 
@@ -280,9 +275,14 @@ public class Main{
     static Show[] show = new Show[1368];
 
     public static void main(String[] args) throws IOException, ParseException {
-
+        Scanner sc = new Scanner(System.in);
         Show.leiaShow(show);
-        show[1366].imprimir();;
+        String linha = sc.next();
+        while (!linha.equals("FIM")) {
+            int index = Integer.parseInt(linha.substring(1))-1;
+            show[index].imprimir();
+            linha = sc.next();
+        }
 
     }
 
