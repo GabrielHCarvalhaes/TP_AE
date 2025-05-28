@@ -148,8 +148,8 @@ class Show{
     //leitura
     public static void leiaShow(Show[] show) throws IOException, ParseException{
         
-        //BufferedReader file = new BufferedReader(new InputStreamReader(new FileInputStream("/tmp/disneyplus.csv"), StandardCharsets.UTF_8));
         BufferedReader file = new BufferedReader(new InputStreamReader(new FileInputStream("/tmp/disneyplus.csv"), StandardCharsets.UTF_8));
+
         file.readLine();
 
         String linha = "";
@@ -178,16 +178,19 @@ class Show{
                 cast[i]=titleHasAspas(cast[i]);
             }
             ordenandoVetor(cast);
-
+            if(divisao[3].isEmpty()){
+                divisao[3]="NaN";
+            }
+            if(divisao[5].isEmpty()){
+                divisao[5]="NaN";
+            }
             Date date;
             if(!divisao[6].isEmpty()){
                 SimpleDateFormat formatter = new SimpleDateFormat("MMMM dd, yyyy", Locale.ENGLISH);
                 String data = divisao[6];
                 date = formatter.parse(data);
             }else{
-                SimpleDateFormat formatter = new SimpleDateFormat("MMMM dd, yyyy", Locale.ENGLISH);
-                String data = "March 1, 1900";
-                date = formatter.parse(data);            
+                date = null;
             }
             int ano = Integer.parseInt(divisao[7]);
             String[] listed = divisao[10].split(",\\s*"); 
@@ -306,45 +309,83 @@ class Show{
 
 }
 
-public class Main{
-
+public class Main {
     static Show[] show = new Show[1368];
-    static int[] ids= new int[1368];
+    static int ids[] = new int[1368];
+    
     public static void main(String[] args) throws IOException, ParseException {
         Scanner sc = new Scanner(System.in);
         Show.leiaShow(show);
         String linha = sc.next();
-        int tamIds=0;
+        int tam = 0;
+
         while (!linha.equals("FIM")) {
             int index = Integer.parseInt(linha.substring(1));
-            ids[tamIds]=index;
+            ids[tam] = index;
             linha = sc.next();
-            tamIds++;
+            tam++;
         }
-        sc.nextLine();
-        linha = sc.nextLine();
-        String key;
-        while (!linha.equals("FIM")) {
-            key =linha;
-            pesquisar(key,tamIds);
-            linha = sc.nextLine();
-        }
+        
+        heapsort(tam);
 
-    }
-
-    public static void pesquisar(String chave, int n){
-        boolean nContains = true ;
-        for(int i = 0; i < n && nContains; i++){
-
-            if( chave.equals(show[ids[i]-1].getTitle())){
-                nContains=false;
-                System.out.println("SIM");
-            }
-
-        }
-        if(nContains){
-            System.out.println("NAO");
+        for(int i = 0; i < tam; i++) {
+            show[ids[i]-1].imprimir(); 
         }
     }
 
+    public static void heapify(int n, int i) {
+        int maior = i;
+        int esq = 2 * i + 1;
+        int dir = 2 * i + 2;
+
+        if (esq < n && compareShows(esq, maior) > 0) {
+            maior = esq;
+        }
+
+        if (dir < n && compareShows(dir, maior) > 0) {
+            maior = dir;
+        }
+
+        if (maior != i) {
+            swap(i, maior);
+            heapify(n, maior);
+        }
+    }
+    
+    public static void heapsort(int n) {
+
+        for (int i = n / 2 - 1; i >= 0; i--) {
+            heapify(n, i);
+        }
+
+        for (int i = n - 1; i > 0; i--) {
+
+            swap(0, i);
+            heapify(i, 0);
+        }
+    }
+
+
+    private static int compareShows(int i, int j) {
+        // Obtém os objetos Show correspondentes aos IDs
+        Show show1 = show[ids[i]-1];
+        Show show2 = show[ids[j]-1];
+        
+
+        int cmpDirector = show1.getDirector().toLowerCase()
+                         .compareTo(show2.getDirector().toLowerCase());
+        
+        if (cmpDirector != 0) {
+            return cmpDirector;
+        }
+        
+        return show1.getTitle().toLowerCase()
+               .compareTo(show2.getTitle().toLowerCase());
+    }
+
+    public static void swap(int i, int j) {
+        int temp = ids[i];
+        ids[i] = ids[j];
+        ids[j] = temp;
+    }
 }

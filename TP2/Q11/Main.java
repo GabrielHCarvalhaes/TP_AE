@@ -148,8 +148,8 @@ class Show{
     //leitura
     public static void leiaShow(Show[] show) throws IOException, ParseException{
         
-        //BufferedReader file = new BufferedReader(new InputStreamReader(new FileInputStream("/tmp/disneyplus.csv"), StandardCharsets.UTF_8));
         BufferedReader file = new BufferedReader(new InputStreamReader(new FileInputStream("/tmp/disneyplus.csv"), StandardCharsets.UTF_8));
+
         file.readLine();
 
         String linha = "";
@@ -178,16 +178,19 @@ class Show{
                 cast[i]=titleHasAspas(cast[i]);
             }
             ordenandoVetor(cast);
-
+            if(divisao[3].isEmpty()){
+                divisao[3]="NaN";
+            }
+            if(divisao[5].isEmpty()){
+                divisao[5]="NaN";
+            }
             Date date;
             if(!divisao[6].isEmpty()){
                 SimpleDateFormat formatter = new SimpleDateFormat("MMMM dd, yyyy", Locale.ENGLISH);
                 String data = divisao[6];
                 date = formatter.parse(data);
             }else{
-                SimpleDateFormat formatter = new SimpleDateFormat("MMMM dd, yyyy", Locale.ENGLISH);
-                String data = "March 1, 1900";
-                date = formatter.parse(data);            
+                date = null;
             }
             int ano = Integer.parseInt(divisao[7]);
             String[] listed = divisao[10].split(",\\s*"); 
@@ -306,45 +309,112 @@ class Show{
 
 }
 
-public class Main{
-
+public class Main {
     static Show[] show = new Show[1368];
-    static int[] ids= new int[1368];
+    static int ids[] = new int[1368];
+    
     public static void main(String[] args) throws IOException, ParseException {
         Scanner sc = new Scanner(System.in);
         Show.leiaShow(show);
         String linha = sc.next();
-        int tamIds=0;
+        int tam = 0;
+
         while (!linha.equals("FIM")) {
             int index = Integer.parseInt(linha.substring(1));
-            ids[tamIds]=index;
+            ids[tam] = index;
             linha = sc.next();
-            tamIds++;
+            tam++;
         }
-        sc.nextLine();
-        linha = sc.nextLine();
-        String key;
-        while (!linha.equals("FIM")) {
-            key =linha;
-            pesquisar(key,tamIds);
-            linha = sc.nextLine();
-        }
+        
+        countingSort(tam);
 
+        for(int i = 0; i < tam; i++) {
+            show[ids[i]-1].imprimir(); 
+        }
     }
 
-    public static void pesquisar(String chave, int n){
-        boolean nContains = true ;
-        for(int i = 0; i < n && nContains; i++){
-
-            if( chave.equals(show[ids[i]-1].getTitle())){
-                nContains=false;
-                System.out.println("SIM");
+    public static void countingSort(int n) {
+        // 1. Encontrar o ano mínimo e máximo
+        int minYear = Integer.MAX_VALUE;
+        int maxYear = Integer.MIN_VALUE;
+        
+        for (int i = 0; i < n; i++) {
+            int year = show[ids[i]-1].getRelease_year();  
+            if (year < minYear) minYear = year;
+            if (year > maxYear) maxYear = year;
+        }
+        
+        int range = maxYear - minYear + 1;
+        
+        // 2. Criar array de contagem e array auxiliar
+        int[] count = new int[range];
+        int[] output = new int[n];
+        
+        // 3. Contar a frequência de cada ano
+        for (int i = 0; i < n; i++) {
+            int year = show[ids[i]-1].getRelease_year();  
+            count[year - minYear]++;
+        }
+        
+        // 4. Calcular as posições cumulativas
+        for (int i = 1; i < range; i++) {
+            count[i] += count[i-1];
+        }
+        
+        // 5. Construir o array de saída (ordenado por ano)
+        for (int i = n-1; i >= 0; i--) {
+            int year = show[ids[i]-1].getRelease_year(); 
+            output[count[year - minYear] - 1] = ids[i];
+            count[year - minYear]--;
+        }
+        
+        // 6. Agora ordenar os empates (mesmo ano) por título
+        int start = 0;
+        for (int i = 1; i < n; i++) {
+            int currentYear = show[output[i]-1].getRelease_year();  
+            int prevYear = show[output[i-1]-1].getRelease_year();  
+            
+            if (currentYear != prevYear) {
+                if (start < i-1) {
+                    sortByTitle(output, start, i-1);
+                }
+                start = i;
             }
-
         }
-        if(nContains){
-            System.out.println("NAO");
+        
+        // Ordenar o último grupo
+        if (start < n-1) {
+            sortByTitle(output, start, n-1);
+        }
+        
+        // 7. Copiar de volta para o array original
+        System.arraycopy(output, 0, ids, 0, n);
+    }
+
+    // Método para ordenar por título (usando insertion sort para pequenos intervalos)
+    private static void sortByTitle(int[] array, int start, int end) {
+        for (int i = start + 1; i <= end; i++) {
+            int key = array[i];
+            int j = i - 1;
+            
+            while (j >= start && compareTitles(array[j], key) > 0) {
+                array[j + 1] = array[j];
+                j--;
+            }
+            array[j + 1] = key;
         }
     }
 
+    // Método para comparar apenas os títulos
+    private static int compareTitles(int id1, int id2) {
+        Show show1 = show[id1-1];
+        Show show2 = show[id2-1];
+        return show1.getTitle().toLowerCase()
+               .compareTo(show2.getTitle().toLowerCase());
+    }
+    public static void swap(int i, int j) {
+        int temp = ids[i];
+        ids[i] = ids[j];
+        ids[j] = temp;
+    }
 }

@@ -148,8 +148,8 @@ class Show{
     //leitura
     public static void leiaShow(Show[] show) throws IOException, ParseException{
         
-        //BufferedReader file = new BufferedReader(new InputStreamReader(new FileInputStream("/tmp/disneyplus.csv"), StandardCharsets.UTF_8));
         BufferedReader file = new BufferedReader(new InputStreamReader(new FileInputStream("/tmp/disneyplus.csv"), StandardCharsets.UTF_8));
+
         file.readLine();
 
         String linha = "";
@@ -178,16 +178,19 @@ class Show{
                 cast[i]=titleHasAspas(cast[i]);
             }
             ordenandoVetor(cast);
-
+            if(divisao[3].isEmpty()){
+                divisao[3]="NaN";
+            }
+            if(divisao[5].isEmpty()){
+                divisao[5]="NaN";
+            }
             Date date;
             if(!divisao[6].isEmpty()){
                 SimpleDateFormat formatter = new SimpleDateFormat("MMMM dd, yyyy", Locale.ENGLISH);
                 String data = divisao[6];
                 date = formatter.parse(data);
             }else{
-                SimpleDateFormat formatter = new SimpleDateFormat("MMMM dd, yyyy", Locale.ENGLISH);
-                String data = "March 1, 1900";
-                date = formatter.parse(data);            
+                date = null;
             }
             int ano = Integer.parseInt(divisao[7]);
             String[] listed = divisao[10].split(",\\s*"); 
@@ -306,45 +309,94 @@ class Show{
 
 }
 
-public class Main{
-
+public class Main {
     static Show[] show = new Show[1368];
-    static int[] ids= new int[1368];
+    static int ids[] = new int[1368];
+    
     public static void main(String[] args) throws IOException, ParseException {
         Scanner sc = new Scanner(System.in);
         Show.leiaShow(show);
         String linha = sc.next();
-        int tamIds=0;
+        int tam = 0;
+
         while (!linha.equals("FIM")) {
             int index = Integer.parseInt(linha.substring(1));
-            ids[tamIds]=index;
+            ids[tam] = index;
             linha = sc.next();
-            tamIds++;
+            tam++;
         }
-        sc.nextLine();
-        linha = sc.nextLine();
-        String key;
-        while (!linha.equals("FIM")) {
-            key =linha;
-            pesquisar(key,tamIds);
-            linha = sc.nextLine();
-        }
+        
+        mergeSort(ids, 0, tam-1);
 
+        for(int i = 0; i < tam; i++) {
+            show[ids[i]-1].imprimir(); 
+        }
     }
 
-    public static void pesquisar(String chave, int n){
-        boolean nContains = true ;
-        for(int i = 0; i < n && nContains; i++){
+    public static void mergeSort(int[] arr, int left, int right) {
+        if (left < right) {
+            int middle = (left + right) / 2;
+            
+            mergeSort(arr, left, middle);
+            mergeSort(arr, middle + 1, right);
+            
+            merge(arr, left, middle, right);
+        }
+    }
 
-            if( chave.equals(show[ids[i]-1].getTitle())){
-                nContains=false;
-                System.out.println("SIM");
+    private static void merge(int[] arr, int left, int middle, int right) {
+        int n1 = middle - left + 1;
+        int n2 = right - middle;
+        
+        int[] leftArray = new int[n1];
+        int[] rightArray = new int[n2];
+        
+        for (int i = 0; i < n1; ++i) {
+            leftArray[i] = arr[left + i];
+        }
+        for (int j = 0; j < n2; ++j) {
+            rightArray[j] = arr[middle + 1 + j];
+        }
+        
+        int i = 0, j = 0;
+        int k = left;
+        
+        while (i < n1 && j < n2) {
+            if (compareShows(leftArray[i], rightArray[j]) <= 0) {
+                arr[k] = leftArray[i];
+                i++;
+            } else {
+                arr[k] = rightArray[j];
+                j++;
             }
-
+            k++;
         }
-        if(nContains){
-            System.out.println("NAO");
+        
+        while (i < n1) {
+            arr[k] = leftArray[i];
+            i++;
+            k++;
+        }
+        
+        while (j < n2) {
+            arr[k] = rightArray[j];
+            j++;
+            k++;
         }
     }
 
+    private static int compareShows(int id1, int id2) {
+        Show show1 = show[id1-1];
+        Show show2 = show[id2-1];
+        
+        // Compara primeiro pela duração (como string)
+        int cmpDuration = show1.getDuration().compareTo(show2.getDuration());
+        if (cmpDuration != 0) {
+            return cmpDuration;
+        }
+        
+        // Se as durações forem iguais, compara por título
+        return show1.getTitle().compareToIgnoreCase(show2.getTitle());
+    }
 }
+

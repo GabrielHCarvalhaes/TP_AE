@@ -148,8 +148,8 @@ class Show{
     //leitura
     public static void leiaShow(Show[] show) throws IOException, ParseException{
         
-        //BufferedReader file = new BufferedReader(new InputStreamReader(new FileInputStream("/tmp/disneyplus.csv"), StandardCharsets.UTF_8));
-        BufferedReader file = new BufferedReader(new InputStreamReader(new FileInputStream("/tmp/disneyplus.csv"), StandardCharsets.UTF_8));
+        BufferedReader file = new BufferedReader(new InputStreamReader(new FileInputStream("./tmp/disneyplus.csv"), StandardCharsets.UTF_8));
+
         file.readLine();
 
         String linha = "";
@@ -179,16 +179,14 @@ class Show{
             }
             ordenandoVetor(cast);
 
-            Date date;
-            if(!divisao[6].isEmpty()){
-                SimpleDateFormat formatter = new SimpleDateFormat("MMMM dd, yyyy", Locale.ENGLISH);
-                String data = divisao[6];
-                date = formatter.parse(data);
-            }else{
-                SimpleDateFormat formatter = new SimpleDateFormat("MMMM dd, yyyy", Locale.ENGLISH);
-                String data = "March 1, 1900";
-                date = formatter.parse(data);            
+            if(divisao[6].isEmpty()){
+                divisao[6] = "March 1, 1900";
             }
+            Date date;
+            SimpleDateFormat formatter = new SimpleDateFormat("MMMM dd, yyyy", Locale.ENGLISH);
+            String data = divisao[6];
+            date = formatter.parse(data);
+
             int ano = Integer.parseInt(divisao[7]);
             String[] listed = divisao[10].split(",\\s*"); 
             for(int i = 0; i <listed.length; i++){
@@ -279,13 +277,11 @@ class Show{
         }else{
             System.out.print(" ## " + country + " ## ");
         }
-        if(date_added == null){
-            System.out.print("NaN" + " ## " + "[");
-        }else{
-            SimpleDateFormat formatter = new SimpleDateFormat("MMMM d, yyyy", Locale.ENGLISH);
-            String data = formatter.format(date_added);
-            System.out.print(data + " ## " );
-        }
+
+        SimpleDateFormat formatter = new SimpleDateFormat("MMMM d, yyyy", Locale.ENGLISH);
+        String data = formatter.format(date_added);
+        System.out.print(data + " ## " );
+        
 
         System.out.print(release_year + " ## ");
         System.out.print(rating + " ## ");
@@ -309,42 +305,17 @@ class Show{
 public class Main{
 
     static Show[] show = new Show[1368];
-    static int[] ids= new int[1368];
+
     public static void main(String[] args) throws IOException, ParseException {
         Scanner sc = new Scanner(System.in);
         Show.leiaShow(show);
         String linha = sc.next();
-        int tamIds=0;
         while (!linha.equals("FIM")) {
-            int index = Integer.parseInt(linha.substring(1));
-            ids[tamIds]=index;
+            int index = Integer.parseInt(linha.substring(1))-1;
+            show[index].imprimir();
             linha = sc.next();
-            tamIds++;
-        }
-        sc.nextLine();
-        linha = sc.nextLine();
-        String key;
-        while (!linha.equals("FIM")) {
-            key =linha;
-            pesquisar(key,tamIds);
-            linha = sc.nextLine();
         }
 
-    }
-
-    public static void pesquisar(String chave, int n){
-        boolean nContains = true ;
-        for(int i = 0; i < n && nContains; i++){
-
-            if( chave.equals(show[ids[i]-1].getTitle())){
-                nContains=false;
-                System.out.println("SIM");
-            }
-
-        }
-        if(nContains){
-            System.out.println("NAO");
-        }
     }
 
 }

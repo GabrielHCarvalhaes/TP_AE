@@ -148,8 +148,8 @@ class Show{
     //leitura
     public static void leiaShow(Show[] show) throws IOException, ParseException{
         
-        //BufferedReader file = new BufferedReader(new InputStreamReader(new FileInputStream("/tmp/disneyplus.csv"), StandardCharsets.UTF_8));
         BufferedReader file = new BufferedReader(new InputStreamReader(new FileInputStream("/tmp/disneyplus.csv"), StandardCharsets.UTF_8));
+
         file.readLine();
 
         String linha = "";
@@ -185,9 +185,7 @@ class Show{
                 String data = divisao[6];
                 date = formatter.parse(data);
             }else{
-                SimpleDateFormat formatter = new SimpleDateFormat("MMMM dd, yyyy", Locale.ENGLISH);
-                String data = "March 1, 1900";
-                date = formatter.parse(data);            
+                date = null;
             }
             int ano = Integer.parseInt(divisao[7]);
             String[] listed = divisao[10].split(",\\s*"); 
@@ -306,45 +304,86 @@ class Show{
 
 }
 
-public class Main{
-
+public class Main {
     static Show[] show = new Show[1368];
-    static int[] ids= new int[1368];
+    static int ids[] = new int[1368];
+    
     public static void main(String[] args) throws IOException, ParseException {
         Scanner sc = new Scanner(System.in);
         Show.leiaShow(show);
         String linha = sc.next();
-        int tamIds=0;
+        int tam = 0;
+
         while (!linha.equals("FIM")) {
             int index = Integer.parseInt(linha.substring(1));
-            ids[tamIds]=index;
+            ids[tam] = index;
             linha = sc.next();
-            tamIds++;
+            tam++;
         }
-        sc.nextLine();
-        linha = sc.nextLine();
-        String key;
-        while (!linha.equals("FIM")) {
-            key =linha;
-            pesquisar(key,tamIds);
-            linha = sc.nextLine();
-        }
+        
+        quickSort(ids, 0, tam-1);
 
+        for(int i = 0; i < 10; i++) {
+            show[ids[i]-1].imprimir(); 
+        }
     }
 
-    public static void pesquisar(String chave, int n){
-        boolean nContains = true ;
-        for(int i = 0; i < n && nContains; i++){
+    public static void quickSort(int[] arr, int low, int high) {
+        if (low < high) {
+            int pi = partition(arr, low, high);
+            quickSort(arr, low, pi-1);
+            quickSort(arr, pi+1, high);
+        }
+    }
 
-            if( chave.equals(show[ids[i]-1].getTitle())){
-                nContains=false;
-                System.out.println("SIM");
+    private static int partition(int[] arr, int low, int high) {
+        int pivot = arr[high];
+        int i = (low-1);
+        
+        for (int j = low; j < high; j++) {
+            if (compareShows(arr[j], pivot) <= 0) {
+                i++;
+                swap(arr, i, j);
             }
-
         }
-        if(nContains){
-            System.out.println("NAO");
+        
+        swap(arr, i+1, high);
+        return i+1;
+    }
+
+    private static int compareShows(int id1, int id2) {
+        Show show1 = show[id1-1];
+        Show show2 = show[id2-1];
+        
+        Date date1 = show1.getDate_added();
+        Date date2 = show2.getDate_added();
+        
+        // Se ambas as datas forem nulas, considera igual
+        if (date1 == null && date2 == null) {
+            return show1.getTitle().compareToIgnoreCase(show2.getTitle());
+        }
+        // Se apenas date1 for nula, considera menor
+        else if (date1 == null) {
+            return -1;
+        }
+        // Se apenas date2 for nula, considera maior
+        else if (date2 == null) {
+            return 1;
+        }
+        // Compara as datas
+        else {
+            int cmpDate = date1.compareTo(date2);
+            if (cmpDate != 0) {
+                return cmpDate;
+            }
+            // Se as datas forem iguais, compara por título
+            return show1.getTitle().compareToIgnoreCase(show2.getTitle());
         }
     }
 
+    private static void swap(int[] arr, int i, int j) {
+        int temp = arr[i];
+        arr[i] = arr[j];
+        arr[j] = temp;
+    }
 }
