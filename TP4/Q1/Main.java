@@ -300,8 +300,7 @@ class Show{
 }
 
 class No{
-    int chave;
-    Arvore2 elemento;
+    Show elemento;
     No dir,esq;
 
     public No(){
@@ -310,29 +309,12 @@ class No{
         this.esq = null;
     }
 
-    public No(int x){
-        this.chave = x;
-        this.elemento = new Arvore2();
-        this.dir = null;
-        this.esq = null;
-    }
-
-}
-
-class No2{
-    Show elemento;
-    No2 dir,esq;
-
-    public No2(){
-        this.elemento = null;
-        this.dir = null;
-        this.esq = null;
-    }
-    public No2(Show x){
+    public No(Show x){
         this.elemento = x;
         this.dir = null;
         this.esq = null;
     }
+
 }
 
 class Arvore{
@@ -348,7 +330,7 @@ class Arvore{
     private No inserir(Show i, No n){
 
         if(n == null){
-            n = new No(i.getRelease_year()%15);
+            n = new No(i);
         }else if(comparando(n.elemento, i) > 0){
             n.esq = inserir(i, n.esq);
         }else if(comparando(n.elemento, i) < 0){
@@ -363,74 +345,6 @@ class Arvore{
         pesquisar(i, raiz);
     }
     private void pesquisar(String i,No n){
-        if(n == null){
-            System.out.printf("NAO\n");
-        }else if(comparando(n.chave, i) > 0){
-            System.out.printf("esq ");
-            pesquisar(i, n.esq);
-        }else if(comparando(n.chave, i) < 0){
-            System.out.printf("dir ");
-            pesquisar(i, n.dir);
-        }else{
-            System.out.printf("SIM\n");
-        }
-    }
-
-    private int comparando(Show n, String i){
-        int result;
-        if(){
-            result = 1;
-        }else if(n.getTitle().compareTo(i) < 0){
-            result = -1;
-        }else{
-            result = 0;
-        }
-
-        return result;
-    }
-
-    private int comparando(Show n, Show i){
-        int result;
-        if(n.getTitle().compareTo(i.getTitle()) > 0){
-            result = 1;
-        }else if(n.getTitle().compareTo(i.getTitle()) < 0){
-            result = -1;
-        }else{
-            result = 0;
-        }
-
-        return result;
-    }
-}
-class Arvore2{
-    No2 raiz;
-    
-    Arvore2(){
-        this.raiz = new No2();
-    }
-
-    public void inserir(Show i){
-        this.raiz = inserir(i,raiz);
-    }
-
-    private No2 inserir(Show i, No2 n){
-
-        if(n == null){
-            n = new No2(i);
-        }else if(comparando(n.elemento, i) > 0){
-            n.esq = inserir(i, n.esq);
-        }else if(comparando(n.elemento, i) < 0){
-            n.dir = inserir(i, n.dir);
-        }
-
-        return n;
-    }
-
-    public void pesquisar(String i){
-        System.out.printf("=>raiz ");
-        pesquisar(i, raiz);
-    }
-    private void pesquisar(String i,No2 n){
         if(n == null){
             System.out.printf("NAO\n");
         }else if(comparando(n.elemento, i) > 0){

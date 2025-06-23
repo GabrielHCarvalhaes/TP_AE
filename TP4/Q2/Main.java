@@ -300,19 +300,37 @@ class Show{
 }
 
 class No{
-    Show elemento;
+    int chave;
+    No2 raiz;
     No dir,esq;
 
     public No(){
-        this.elemento = null;
+        this.chave = 0;
         this.dir = null;
         this.esq = null;
     }
 
-    public No(Show x){
-        this.elemento = x;
+    public No(int x){
+        this.chave = x;
         this.dir = null;
         this.esq = null;
+    }
+}
+
+class No2 {
+    String elemento;
+    No2 esq,dir;
+    
+    No2(){
+        this.elemento = null;
+        this.dir = null;
+        this.esq = null;  
+    }
+
+    No2(String x){
+        this.elemento = x;
+        this.dir = null;
+        this.esq = null;  
     }
 
 }
@@ -330,40 +348,42 @@ class Arvore{
     private No inserir(Show i, No n){
 
         if(n == null){
-            n = new No(i);
-        }else if(comparando(n.elemento, i) > 0){
+            n = new No(i.getRelease_year() % 15);
+            n.raiz = new No2(i.getTitle());
+        }else if(comparandoInserir1(n.chave, i) < 0){
             n.esq = inserir(i, n.esq);
-        }else if(comparando(n.elemento, i) < 0){
+        }else if(comparandoInserir1(n.chave, i) > 0){
             n.dir = inserir(i, n.dir);
+        }else if(comparandoInserir1(n.chave, i) == 0){
+            n.raiz = inserirNo2(i, n.raiz);
+        }
+
+        return n;
+    }
+    
+    private No2 inserirNo2(Show i, No2 n){
+
+        if(n == null){
+            n = new No2(i.getTitle());            
+        }else if(comparandoInserir2(n.elemento, i) > 0){
+            n.dir = inserirNo2(i, n.dir);
+        }else if(comparandoInserir2(n.elemento, i) < 0){
+            n.esq = inserirNo2(i, n.esq);
         }
 
         return n;
     }
 
-    public void pesquisar(String i){
-        System.out.printf("=>raiz ");
-        pesquisar(i, raiz);
-    }
-    private void pesquisar(String i,No n){
-        if(n == null){
-            System.out.printf("NAO\n");
-        }else if(comparando(n.elemento, i) > 0){
-            System.out.printf("esq ");
-            pesquisar(i, n.esq);
-        }else if(comparando(n.elemento, i) < 0){
-            System.out.printf("dir ");
-            pesquisar(i, n.dir);
-        }else{
-            System.out.printf("SIM\n");
-        }
+    private int comparandoInserir2(String n, Show i) {
+        return i.getTitle().compareTo(n); 
     }
 
-    private int comparando(Show n, String i){
+    private int comparandoInserir1(int n, Show i){
         int result;
-        if(n.getTitle().compareTo(i) > 0){
-            result = 1;
-        }else if(n.getTitle().compareTo(i) < 0){
+        if(n < (i.getRelease_year()%15)){
             result = -1;
+        }else if(n > (i.getRelease_year()%15)){
+            result = 1;
         }else{
             result = 0;
         }
@@ -371,18 +391,8 @@ class Arvore{
         return result;
     }
 
-    private int comparando(Show n, Show i){
-        int result;
-        if(n.getTitle().compareTo(i.getTitle()) > 0){
-            result = 1;
-        }else if(n.getTitle().compareTo(i.getTitle()) < 0){
-            result = -1;
-        }else{
-            result = 0;
-        }
+    
 
-        return result;
-    }
 }
 
 public class Main{
